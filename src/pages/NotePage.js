@@ -13,9 +13,20 @@ const NotePage = ({ match, history }) => {
     }, [noteId])
 
     let getNote = async ()=> {
+        if ( noteId === 'new' ) return
         let response = await fetch(`/api/notes/${noteId}/`)
         let data = await response.json()
         setNote(data)
+    }
+
+    let createNote = async () => {
+        fetch(`/api/notes/create/`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(note)
+        })
     }
 
     let updateNote = async () => {
@@ -38,8 +49,20 @@ const NotePage = ({ match, history }) => {
     }
 
     let handleSubmit = () => {
+        if (noteId !== 'new' && note.body === ''){
+            console.log("DELETE METHOD")
+            deleteNote()
+        } else if (noteId !== 'new'){
+            updateNote()
+        } else if (noteId === 'new' && note !== null){
+            createNote()
+        }
         updateNote()
         history.push('/')
+    }
+
+    let handleChange = (value) => {
+        setNote(note => ({ ...note, 'body':value }))
     }
 
     return (
@@ -50,11 +73,18 @@ const NotePage = ({ match, history }) => {
                     <ArrowLeft onClick={handleSubmit} />
                 </Link>
             </h3>
-            <Link to="/">
-                <button onClick={deleteNote}>Delete</button>
-            </Link>
+            { noteId !== 'new' ? (
+                <Link to="/">
+                    <button onClick={deleteNote}>Delete</button>
+                </Link>
+            ) : (
+                <Link to="/">
+                    <button onClick={handleSubmit}>Done</button>
+                </Link>
+            )}
+                
         </div>
-        <textarea onChange={(e) => { setNote({...note, 'body': e.target.value }) }} defaultValue={note?.body}></textarea>
+        <textarea onChange={(e) => { handleChange(e.target.value)}} value={note?.body}></textarea>
     </div>
   )
 }
